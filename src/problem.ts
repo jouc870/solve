@@ -1,61 +1,71 @@
-import { assert } from 'console';
+
 import { TAG } from './problem_tags';
 
 export class Problem {
-    static readonly recommendSymbol = '✔';
-
-    private bRecommend = false;
+    private isRecommend: boolean = false;
     private title = '';
     private url = '';
-    private level = -1;
+    private level = 0;
     private tag = TAG.NONE;
-    private bSolved = false;
+    private isSolved = false;
     private deadlineOrNull: Date|null = null;
 
     private constructor() {
     }
 
-    static createFromJson(json: any) {
+
+    static CreateFromJson(json: object): Problem {
         try {
-            return Object.assign(new Problem(), json);
+            const problem = Object.assign(new Problem(), json);
+
+            return problem;
         }
         catch {
-            return null;
+            // assert (false);
+
+            return new Problem(); // return empty problem.
         }
     }
 
-    /** 추천 문제일 경우, recommedSymbol + tilte을 return하고 아니면 그냥 title만 반환 */
-    getTitle() {
-        return (this.bRecommend) ? Problem.recommendSymbol + ' ' + this.title : this.title;
+    IsRecommend() {
+        return this.IsRecommend;
     }
 
-    getUrl() {
+    GetTitle() {
+        return this.title;
+    }
+
+    GetUrl() {
         return this.url;
     }
 
-    getProblemId() {
+    GetLevel() {
+        return this.level;
+    }
+
+    GetProblemId() {
         let arr = this.url.split('/');
 
         return arr[arr.length - 1];
     }
 
-    getTag() {
+    GetTag() {
         return this.tag;
     }
 
-    getDeadlineOrNull() {
+    GetDeadlineOrNull() {
         return this.deadlineOrNull;
     }
 
-    setDeadline(deadline : Date) {
+    SetDeadline(deadline : Date) {
         this.deadlineOrNull = deadline;
     }
 
-    isSolved() {
-        return this.bSolved;
+    IsSolved() {
+        return this.isSolved;
     }
 
-    solve() {
-        this.bSolved = true;
+    Solve() {
+        this.isSolved = true;
     }
 }
