@@ -1,17 +1,56 @@
 import { MyDate } from '@/my_date';
 import { Problem } from '@/problem';
-import { assert } from 'console';
-import { readFile } from 'fs';
-import Papa  from 'papaparse';
+import { TAG } from '@/problem_tags';
+import Papa, { ParseResult }  from 'papaparse';
 import { useState, useRef, useEffect } from 'react';
+import { Style } from 'util'; '@/styles/globals.css';
 
 // change file name.
 // super mario maker2 interface? ref ../goal.jpg
 
-const problems: Problem[] = [];
+type tableProps = {
+    problems: Problem[];
+}
+
+export function Table(props: tableProps) {
+    const head = ["recommend", "title", "level", "tag", "isSolved"];
+    const tableRef = useRef<HTMLTableElement>(null);
+    const keyRef = useRef<number>(0);
+
+    return <table ref={tableRef}>
+        <thead>
+            <tr>
+                {
+                    head.map((element) => {
+                        return <th key={element}>{element}</th>
+                    })
+                }
+            </tr>
+        </thead>
+        <tbody>
+            {
+                props.problems.map((problem) => {
+                    keyRef.current++;
+
+                    return <tr key={keyRef.current}>
+                        <td>{ problem.IsRecommend() ? "✔" : " " }</td>
+                        <td><a href={ problem.GetUrl() }>{ problem.GetTitle() }</a></td>
+                        <td>{ problem.GetLevel() }</td>
+                        <td>{ problem.GetTag() }</td>
+                        <td> false </td>
+                    </tr>
+                })
+            }
+        </tbody>
+    </table>
+}
 
 export function FileUpload() {
     const uploadFileRef = useRef<HTMLInputElement>(null);
+    // const [problems, setProblems] = useState<Problem[]>([]);
+    const problemsRef = useRef<Problem[]>([]);
+
+    const [temp, setTemp] = useState<number>(0);
     
     return (
         <>
@@ -19,16 +58,27 @@ export function FileUpload() {
             <input type={'file'} accept={'.csv'} ref={uploadFileRef} onChange={() => {
                 const file = uploadFileRef.current!.files![0];
 
-                Papa.parse(file, { header: true, skipEmptyLines: true, complete: (results) => {
-                    for (let i = 0; i < results.data.length; ++i) {
-                        // to table data.
-                        problems.push(Problem.createFromJson(results.data[i]));
-                    }
+                try {
+                    Papa.parse(file, { header: true, skipEmptyLines: true, complete: (results) => {
+                        // setProblems([]);
+
+                        for (let i = 0; i < results.data.length; ++i) {
+                            problemsRef.current.push(Problem.CreateFromJson(results.data[i] as object));
+                        }
+
                     
-                    uploadFileRef.current!.value = '';
+                        uploadFileRef.current!.value = '';
+
+                        setTemp(temp + 1);
+                        }
+                    });
+                } catch (err) {
+                    console.error(err);
                 }
-            });}}>
+            }}>
             </input>
+            <h3> total : {problemsRef.current.length} </h3>
+            <Table problems={problemsRef.current}/>
         </div>
         </>
     );
@@ -67,7 +117,6 @@ function Calendar() {
 }
 
 function ProblemList() {
-    console.log(problems);
 
     return (
         <div>
@@ -95,3 +144,4 @@ export function CommitBoard() {
         </div>
     );
 }
+
