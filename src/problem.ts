@@ -1,66 +1,43 @@
-
-import { TAG } from './problem_tags';
+import { Tag } from './problem_tags';
+import { problemJson } from './problemJson';
 
 export class Problem {
-    private isRecommend: boolean = false;
-    private title = '';
-    private url = '';
-    private level = 0;
-    private tag = TAG.NONE;
+    readonly isRecommend: boolean;
+    readonly title: string;
+    readonly url: string;
+    readonly level: number;
+    readonly tagCode: number;
+
     private isSolved = false;
     private deadlineOrNull: Date|null = null;
 
-    private constructor() {
+    constructor(json: problemJson) {
+        this.isRecommend = json.isRecommend;
+        this.title = json.title;
+        this.url = json.url;
+        this.tagCode = json.tagCode;
+        this.level = json.level;
     }
 
+    GetId(): number {
+        const temp = this.url.split("/");
 
-    static CreateFromJson(json: object): Problem {
-        try {
-            const problem = Object.assign(new Problem(), json);
+        return Number(temp[temp.length - 1]);
+    }
 
-            return problem;
+    GetTag(): string {
+        let copy = this.tagCode;
+        let index: number = 0;
+
+        while (copy !== 0) {
+            copy >>= 1;
+            console.log(copy);
+            ++index;
         }
-        catch {
-            // assert (false);
 
-            return new Problem(); // return empty problem.
-        }
+        return Object.keys(Tag)[index];
     }
-
-    IsRecommend() {
-        return this.IsRecommend;
-    }
-
-    GetTitle() {
-        return this.title;
-    }
-
-    GetUrl() {
-        return this.url;
-    }
-
-    GetLevel() {
-        return this.level;
-    }
-
-    GetProblemId() {
-        let arr = this.url.split('/');
-
-        return arr[arr.length - 1];
-    }
-
-    GetTag() {
-        return this.tag;
-    }
-
-    GetDeadlineOrNull() {
-        return this.deadlineOrNull;
-    }
-
-    SetDeadline(deadline : Date) {
-        this.deadlineOrNull = deadline;
-    }
-
+    
     IsSolved() {
         return this.isSolved;
     }

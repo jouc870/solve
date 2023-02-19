@@ -19,6 +19,11 @@ export default function Login() {
         console.log(hash(data.password));
     }
 
+    const moveToRegisterPage = () => {
+
+
+    }
+
     return (
         <div>
             <form onSubmit={ handleSubmit(onSubmit) }>
@@ -31,7 +36,8 @@ export default function Login() {
 
                 <input type={'submit'} />
             </form>
-            <input type={'submit'} value={'register'}/>
+
+            <input type={'submit'} value={'register'} onClick={ () => { window.location.href="register" } }/>
         </div>
     );
 }

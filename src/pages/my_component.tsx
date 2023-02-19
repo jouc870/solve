@@ -1,57 +1,63 @@
 import { MyDate } from '@/my_date';
 import { Problem } from '@/problem';
-import { TAG } from '@/problem_tags';
-import Papa, { ParseResult }  from 'papaparse';
+import { Tag } from '@/problem_tags';
+import { Trie } from '@/trie';
+import Papa from 'papaparse';
 import { useState, useRef, useEffect } from 'react';
-import { Style } from 'util'; '@/styles/globals.css';
+import { problemJson } from '@/problemJson';
+import { Searchbar } from './searchbar';
 
-// change file name.
-// super mario maker2 interface? ref ../goal.jpg
-
-type tableProps = {
+export type problemProps = {
     problems: Problem[];
 }
 
-export function Table(props: tableProps) {
+export function Table(props: problemProps) {
     const head = ["recommend", "title", "level", "tag", "isSolved"];
     const tableRef = useRef<HTMLTableElement>(null);
-    const keyRef = useRef<number>(0);
+    const inputRef = useRef<HTMLInputElement>(null);
 
-    return <table ref={tableRef}>
-        <thead>
-            <tr>
+    return (
+        <>
+        <Searchbar problems={props.problems}/>
+        <form onSubmit={(event) => {
+            event.preventDefault();
+            inputRef.current!.value = "";
+        }}>
+    </form>
+        <table ref={tableRef}>
+            <thead>
+                <tr>
+                    {
+                        head.map((element) => {
+                            return <th key={element}>{element}</th>
+                        })
+                    }
+                </tr>
+            </thead>
+            <tbody>
                 {
-                    head.map((element) => {
-                        return <th key={element}>{element}</th>
+                    props.problems.map((problem) => {
+                        console.log(problem)
+                        return <tr key={problem.GetId()}>
+                            <td> { (problem.isRecommend ? "✔" : "") } </td>
+                            <td> <a href={ problem.url }> { problem.title } </a></td>
+                            <td> { problem.level }</td>
+                            <td> { problem.GetTag() } </td>
+                            <td> <input type={'checkbox'} /> </td>
+                        </tr>
                     })
                 }
-            </tr>
-        </thead>
-        <tbody>
-            {
-                props.problems.map((problem) => {
-                    keyRef.current++;
-
-                    return <tr key={keyRef.current}>
-                        <td>{ problem.IsRecommend() ? "✔" : " " }</td>
-                        <td><a href={ problem.GetUrl() }>{ problem.GetTitle() }</a></td>
-                        <td>{ problem.GetLevel() }</td>
-                        <td>{ problem.GetTag() }</td>
-                        <td> false </td>
-                    </tr>
-                })
-            }
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+        </>
+    );
 }
 
 export function FileUpload() {
     const uploadFileRef = useRef<HTMLInputElement>(null);
-    // const [problems, setProblems] = useState<Problem[]>([]);
-    const problemsRef = useRef<Problem[]>([]);
+    const problemRef = useRef<problemJson>();
+    const [problems, setProblems] = useState<Problem[]>([]);
 
-    const [temp, setTemp] = useState<number>(0);
-    
     return (
         <>
         <div>
@@ -59,17 +65,19 @@ export function FileUpload() {
                 const file = uploadFileRef.current!.files![0];
 
                 try {
-                    Papa.parse(file, { header: true, skipEmptyLines: true, complete: (results) => {
-                        // setProblems([]);
+                    Papa.parse(file, { header: true, skipEmptyLines: true, dynamicTyping: true, complete: (results) => {
+                        if (results.errors.length === 0) {
+                            const temp: Problem[] = [];
 
-                        for (let i = 0; i < results.data.length; ++i) {
-                            problemsRef.current.push(Problem.CreateFromJson(results.data[i] as object));
+                            for (let i = 0; i < results.data.length; ++i) {
+                                problemRef.current = results.data[i] as problemJson;
+                                temp.push(new Problem(problemRef.current));
+                            }
+
+                            setProblems(temp);
                         }
-
                     
                         uploadFileRef.current!.value = '';
-
-                        setTemp(temp + 1);
                         }
                     });
                 } catch (err) {
@@ -77,14 +85,13 @@ export function FileUpload() {
                 }
             }}>
             </input>
-            <h3> total : {problemsRef.current.length} </h3>
-            <Table problems={problemsRef.current}/>
+            <Table problems={problems}/>
         </div>
         </>
     );
 }
 
-function Canvas() {
+export function Canvas() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     let x, y;
 
@@ -92,6 +99,7 @@ function Canvas() {
     <div>
       <canvas ref={canvasRef} width={300} height={300}style={ {backgroundColor: 'beige'} } onClick={
         (event) => {
+            console.log(event);
             const canvasContext = canvasRef.current!.getContext('2d')!;
 
             if (canvasContext !== null) {
@@ -103,6 +111,7 @@ function Canvas() {
             }
         }}>
       </canvas>
+      <button> create </button>
     </div>
     );
 }
