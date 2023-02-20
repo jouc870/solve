@@ -1,38 +1,28 @@
 import { useForm, SubmitHandler } from 'react-hook-form';
+import { Util } from '@/util';
+import { useRef } from 'react';
 
-type LoginData = { userName: string, password: string };
-
-const hash = (password: string): number => {
-    let hash = 0;
-
-    for (let i = 0; i < password.length; ++i) {
-        hash += Number(password[i]);
-    }
-
-    return hash;
-}
+type LoginData = { name: string, password: string };
 
 export default function Login() {
-    const { register, handleSubmit, formState: { errors } } = useForm<LoginData>();
+    const { register, handleSubmit, formState: { errors }, watch } = useForm<LoginData>();
 
     const onSubmit = (data: LoginData) => {
-        console.log(hash(data.password));
-    }
-
-    const moveToRegisterPage = () => {
-
-
+        console.log(data); // firebase.
     }
 
     return (
         <div>
             <form onSubmit={ handleSubmit(onSubmit) }>
-                <label> user name </label>
-                <input { ...register("userName", { required: true, pattern: /^[a-z0-9]+$/i }) } />
-                { errors.userName && errors.userName.type === "pattern" && <p> ⚠️ alphabet, 0~9 </p> }
+                <label> name </label>
+                <input { ...register("name", { required: true, pattern: /^[a-z0-9]+$/i }) } />
+                { errors.name && errors.name.type === "required" && <p> ⚠️ This field is required </p> }
+                { errors.name && errors.name.type === "pattern" && <p> ⚠️ User name must contain only letters, numbers </p> }
 
                 <label> password </label>
-                <input { ...register("password", { required: true, minLength: 4 }) } />
+                <input type={"text"} { ...register("password", { required: true, minLength: 6 }) } />
+                { errors.password && errors.password.type === "required" && <p> ⚠️ This field is required </p> }
+                { errors.password && errors.password.type === "minLength" && <p> ⚠️ Password must be a string with a minimum length of 6 </p> }
 
                 <input type={'submit'} />
             </form>
