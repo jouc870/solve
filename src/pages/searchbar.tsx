@@ -1,36 +1,32 @@
-import { useState, useRef, useEffect } from 'react';
+import { Problem } from '@/problem';
+import { problemsContext } from '@/problemsContext';
+import { useState, useRef, useEffect, useContext } from 'react';
 import { Trie } from '../trie';
-import { problemProps } from './my_component';
 
-type searchHintProps = { relatedWords: string[], prev: string }
-export type searchbarProps = { words: string[] }
+type searchHintProps = { relatedWords: string[] }
+// export type searchbarProps = { words: string[], setData: (data: Problem[])=>void }
 
 function SearchHints(props: searchHintProps) {
   return (
     <div>
-      { props.relatedWords.map((relatedWord) => {return <li> { props.prev + relatedWord } </li>}) }
+      { props.relatedWords.map((relatedWord) => {return <li> { relatedWord } </li>}) }
     </div>
   );
 }
 
-export function Searchbar(props: problemProps) {
+export function Searchbar() {
   const [relatedWords, setRelatedWords] = useState<string[]>([]);
+  const temp = useRef<Problem[]>([]);
+  const { problems, setFilteredProblems } = useContext(problemsContext)!;
 
-  const wordsRef = useRef<Set<string>>(new Set());
   const trieRef = useRef<Trie>(new Trie());
   const inputRef = useRef<HTMLInputElement>(null);
-  const prevRef = useRef<string>("");
   
   useEffect(() => { console.log("update") }, [relatedWords]);
 
   useEffect(() => {
-    for (let i = 0; i < props.problems.length; ++i) {
-      const title = props.problems[i].title;
-
-      if (!wordsRef.current.has(title)) {
-        wordsRef.current.add(title);
-        trieRef.current.Insert(title);
-      }
+    for (let i = 0; i < problems.length; ++i) {
+      trieRef.current.Insert(problems[i].title);
     }
   });
 
@@ -38,14 +34,29 @@ export function Searchbar(props: problemProps) {
     <>
     <form onSubmit={(event) => {
         event.preventDefault();
-        inputRef.current!.value = "";
+        // inputRef.current!.value = "";
+
+        temp.current = [];
+
+        for (let i = 0; i < relatedWords.length; ++i) {
+          for (let j = 0; j < problems.length; ++j) {
+            if (relatedWords[i] === problems[j].title) {
+              temp.current.push(problems[j]);
+              break;
+            }
+          }
+        }
+
+        setFilteredProblems(temp.current);
     }}>
       <input ref={inputRef} onChange={() => {
-        prevRef.current = inputRef.current!.value;
         setRelatedWords([...trieRef.current.GetRelatedWords(inputRef.current!.value)]);
+        if (inputRef.current!.value === "") {
+          setFilteredProblems(problems);
+        };
       }}/>
     </form>
-    <SearchHints prev={prevRef.current} relatedWords={relatedWords}/>
+    <SearchHints relatedWords={relatedWords}/>
     </>
   )
 }

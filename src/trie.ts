@@ -98,6 +98,10 @@ export class Trie {
         this.relatedWords = [];
         if (nodeOrNull !== null) {
             this.getRelatedWordsRecursive(nodeOrNull, "", this.relatedWords);
+
+            for (let i = 0; i < this.relatedWords.length; ++i) {
+                this.relatedWords[i] = word + this.relatedWords[i];
+            }
         }
 
         return this.relatedWords;
