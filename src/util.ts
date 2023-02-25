@@ -26,4 +26,7 @@ export class Util {
         return bcrypt.compareSync(password, hash);
     }
 
+    static Lerp(min: number, max: number, amout: number) {
+        return min + (max - min) * amout;
+    }
 }
